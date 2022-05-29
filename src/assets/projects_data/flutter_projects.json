@@ -1,0 +1,32 @@
+{
+    "flutter_projects": [
+        {
+            "projectName": "Youtube Flutter Clone",
+            "description": "This project a simple YouTube clone made using the Flutter SDK. \nIt consist of the ",
+            "technologies": [
+                "flutter",
+                "dart"
+            ],
+            "featured": "",
+            "images": [
+                "src/assets/images/youtube_flutter_clone/"
+            ],
+            "github": "",
+            "created": 0
+        },
+        {
+            "projectName": "WhatsApp Flutter Clone",
+            "description": "This project a simple WhatsApp clone made using the Flutter SDK. \nIt consist of the ",
+            "technologies": [
+                "flutter",
+                "dart"
+            ],
+            "featured": "",
+            "images": [
+                "src/assets/images/whatsapp_flutter_clone/"
+            ],
+            "github": "",
+            "created": 0
+        }
+    ]
+}
