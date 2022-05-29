@@ -8,10 +8,8 @@
   },
   "dependencies": {
     "mdue": "^0.1.4",
-    "nodemailer": "^6.6.3",
     "vue": "^3.0.5",
-    "vue-router": "^4.0.11",
-    "vuex": "^4.0.2"
+    "vue-router": "^4.0.11"
   },
   "devDependencies": {
     "@types/node": "^16.7.1",
