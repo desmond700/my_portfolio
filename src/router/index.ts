@@ -1,9 +1,10 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, RouteMeta, RouteRecordRaw } from 'vue-router'
 
 const app_name = 'My Portfolio'
 
 const routes: Array<RouteRecordRaw> = [
-  { path: '/', 
+  { 
+    path: '/', 
     redirect: '/about'
   },
   { 
@@ -12,23 +13,28 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/About.vue'),
     meta: { 
       pageTitle: `${app_name} - About Page`, 
+      pageName: "About Page",
       routeNavPos: 0
     }
   },
-  { path: '/skills', 
+  { 
+    path: '/skills', 
     name: 'skills',
     component: () => import('../views/Skills.vue'),
     meta: { 
       pageTitle: `${app_name} - Skills Page`, 
+      pageName: "Skills Page",
       routeNavPos: 1
     }
   },
-  { path: '/projects',
+  { 
+    path: '/projects',
     name: 'projects',
     component: () => import('../views/project/ProjectList.vue'),
     meta: { 
       showProjectDetails: false, 
       pageTitle: `${app_name} - Projects Page`, 
+      pageName: "Projects Page",
       routeNavPos: 2
     }
   },
@@ -36,32 +42,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/projects/:id',
     name: 'projectDetails',
     component: () => import('../views/project/ProjectDetails.vue'),
-    meta: { 
+    meta:{
+      requiresAuth: false,
       showProjectDetails: true,
       pageTitle: `${app_name} - Project Details Page`,
+      pageName: "Project details Page",
       routeNavPos: 2
     },
-  },
-  { path: '/resume', 
-    name: 'resume',
-    component: () => import('../views/Resume.vue'),
-    meta: { 
-      pageTitle: `${app_name} - Resume Page`, 
-      routeNavPos: 3
-    }
-  },
-  { path: '/contact', 
-    name: 'contact',
-    component: () => import('../views/Contact.vue'),
-    meta: { 
-      layout: 'with-navbar', 
-      pageTitle: `${app_name} - Contact Page`, 
-      routeNavPos: 4
-    }
   },
   { 
     path: '/:pathMatch(.*)*', 
     name: 'NotFound', 
+    meta: { 
+      pageTitle: `${app_name} - Page not found`,
+      pageName: "Page not found",
+      routeNavPos: -1
+    },
     component: () => import('../views/PageNotFound.vue') 
   }
 ]; // short for `routes: routes`
@@ -71,7 +67,7 @@ const routes: Array<RouteRecordRaw> = [
     routes
   });
 
-  router.beforeEach((to:any, from: any, next: any) => {
+  router.beforeEach((to: any, from: any, next: any) => {
     document.title = to.meta.pageTitle
     next()
   })

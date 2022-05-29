@@ -1,5 +1,125 @@
+<script setup lang="ts">
+    import { onMounted, Ref, ref, watch } from 'vue'
+    import { useRoute } from 'vue-router';
+    import { Close } from "mdue";
+
+    const props = defineProps({
+        toggleNavBar: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    defineEmits(["on-close-navbar"]);
+
+    let route             = useRoute();
+    let navItem           = { event:{}, pos:0};
+    let showNav           = ref<boolean>();
+    let navIndicator      = ref<HTMLDivElement>();
+    let clientWidth       = window.innerWidth;
+    const transitionName  = 'slide-left';
+    const aboutNavItem    = ref<HTMLElement>();
+    const skillsNavItem   = ref<HTMLElement>();
+    const projectsNavItem = ref<HTMLElement>();
+    const resumeNavItem   = ref<HTMLElement>();
+    const contactNavItem  = ref<HTMLElement>();
+    const navigationBar   = ref<HTMLElement>()
+    type GlobalColor = {
+        primary: string,
+        secondary: string,
+        navElement: Ref<HTMLElement | undefined>
+    }
+    
+    const globalColors = Array<GlobalColor>(
+        { primary:'#1a4a70', secondary:'#5f809b', navElement: aboutNavItem },
+        { primary:'#385faa', secondary:'#748fc4', navElement: skillsNavItem },
+        { primary:'#1a586b', secondary:'#5f8a97', navElement: projectsNavItem }
+    );
+
+    if(clientWidth <= 992){
+        showNav.value = false;
+    }
+
+    function navItemSelection(globalColor: GlobalColor): void {
+        const navItem         = globalColor.navElement.value;
+        
+        if (navItem === undefined) return;
+
+        const target         = navItem.firstChild as HTMLElement;
+        const primaryColor   = globalColor.primary;
+        const secondaryColor = globalColor.secondary;
+
+        if (target === null) return;
+
+        const { width, height } = target.getBoundingClientRect();
+        console.log("width", width);
+        console.log("height", height);
+        const parent = target.closest("#navlist");
+        console.log("parent: ", parent);
+        console.log("target.offsetTop: ", target.offsetTop);
+        const indicator = navIndicator.value;
+        console.log("indicator: ", indicator);
+        let root        = document.documentElement
+        let links       = document.querySelector('.router-link-active') as HTMLElement;
+        // let routeNavPos = route.meta.routeNavPos as number;
+        // let el          = links[routeNavPos].firstChild as HTMLElement;
+        let type        = route.matched[0].name as string;
+        
+        if (navIndicator.value !== undefined) {
+            navIndicator.value.style.transform = `translateY(${target.offsetTop}px)`
+            // navIndicator.value.style.height = height+'px';
+            navIndicator.value.style.width = width+'px';
+            navIndicator.value.style.backgroundColor = primaryColor
+            root.style.setProperty('--primary-color', primaryColor);
+            root.style.setProperty('--secondary-color', secondaryColor)
+        }
+        // console.log("active link: ", links);
+    }
+
+    watch(() => props.toggleNavBar, (toggleNavBar) => {
+        console.log("toggleNavBar: ", toggleNavBar);
+        if (navigationBar.value === undefined) return;
+
+        navigationBar.value.style.marginLeft = toggleNavBar ? '0' : '-250px';
+    });
+
+    watch(() => route.name, (_) => {
+        try {
+            const routeMeta   = route.meta;
+            const routeNavPos = parseInt(routeMeta.routeNavPos as string);
+            const globalColor = globalColors[routeNavPos];
+
+            navItemSelection(globalColor);
+        }
+        catch (e) {
+            console.error(e);
+        }
+    });
+
+    onMounted(() => {
+        //if(route.meta.routeNavPos){
+            // navItemSelection();
+        //}
+    })
+
+    defineExpose({ 
+        navIndicator,
+        navigationBar,
+        aboutNavItem,
+        skillsNavItem,
+        projectsNavItem,
+        resumeNavItem,
+        contactNavItem
+    });
+    
+
+</script>
+
 <template>
-    <div id="navbar">
+    <div ref="navigationBar" id="navbar">
+        <button id="navbar-close" @click="$emit('on-close-navbar')">
+            <Close id="icon" />
+        </button>
         <div id="navheading">
             <div id="navImgContainer">
                 <div class="logo-outer-border">
@@ -32,32 +152,24 @@
                 <i class="fas fa-envelope"></i>
             </a>
         </div>
-        <div id="navlist">
-            <div ref="navIndicator" id="nav-item-indicator"></div>
-            <div class="list-item">
-                <router-link class="routerlink" :to="{name: 'about'}" data-position="0" @click="navItemSelection($event)">
-                    <span class="label">About</span>
-                </router-link>
-            </div>
-            <div class="list-item">
-                <router-link class="routerlink" :to="{name: 'skills'}" data-position="1" @click="navItemSelection($event)">
-                    <span class="label">Skills</span>
-                </router-link>
-            </div>
-            <div class="list-item">
-                <router-link class="routerlink" :to="{name: 'projects'}" data-position="2" @click="navItemSelection($event)">
-                    <span class="label">Projects</span>
-                </router-link>
-            </div>
-            <div class="list-item">
-                <router-link class="routerlink" :to="{name: 'resume'}" data-position="3" @click="navItemSelection($event)">
-                    <span class="label">Resume</span>
-                </router-link>
-            </div>
-            <div class="list-item">
-                <router-link class="routerlink" :to="{name: 'contact'}" data-position="4" @click="navItemSelection($event)">
-                    <span class="label">Contact</span>
-                </router-link>
+        <div id="nav-list-container">
+            <div id="navlist">
+                <div ref="navIndicator" id="nav-item-indicator"></div>
+                <div ref="aboutNavItem" class="list-item">
+                    <router-link class="routerlink" :to="{name: 'about'}">
+                        <span class="label">About</span>
+                    </router-link>
+                </div>
+                <div ref="skillsNavItem" class="list-item">
+                    <router-link class="routerlink" :to="{name: 'skills'}">
+                        <span class="label">Skills</span>
+                    </router-link>
+                </div>
+                <div ref="projectsNavItem" class="list-item">
+                    <router-link class="routerlink" :to="{name: 'projects'}">
+                        <span class="label">Projects</span>
+                    </router-link>
+                </div>
             </div>
         </div>
         <!--<div id="footer">
@@ -71,74 +183,6 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
-import { RouterOptions, useRoute } from 'vue-router';
-
-export default defineComponent({
-    name: "Navigation-Bar",
-    setup() {
-        let route = useRoute();
-        let navItem: object = { event:{}, pos:0};
-        let showNav         = ref<boolean>();
-        let navIndicator    = ref<HTMLDivElement>();
-        let clientWidth     = window.innerWidth;
-        const transitionName: string = 'slide-left';
-        const colors: any = {
-            about: { primary:'#1a4a70', secondary:'#5f809b' },
-            skills: { primary:'#385faa', secondary:'#748fc4' },
-            projects: { primary:'#3594cb', secondary:'#72b4db' },
-            resume: { primary:'#CD6155', secondary:'#dc9088' },
-            contact: { primary:'#1a586b', secondary:'#5f8a97' }
-        };
-
-        if(clientWidth <= 992){
-            showNav.value = false;
-        }
-
-        function navItemSelection(event: Event): void {
-            const target = event.target as HTMLElement;
-
-            const { width, height } = target.getBoundingClientRect();
-            console.log("width", width);
-            console.log("height", height);
-            const parent = target.closest("#navlist");
-            console.log("parent: ", parent);
-            console.log("target.offsetTop: ", target.offsetTop);
-            const indicator = navIndicator.value;
-            console.log("indicator: ", indicator);
-            let root        = document.documentElement
-            let links       = document.querySelector('.router-link-active') as HTMLElement;
-            // let routeNavPos = route.meta.routeNavPos as number;
-            // let el          = links[routeNavPos].firstChild as HTMLElement;
-            let type        = route.matched[0].name as string;
-            
-            if (navIndicator.value !== undefined) {
-                navIndicator.value.style.transform = `translateY(${target.offsetTop}px)`
-                // navIndicator.value.style.height = height+'px';
-                navIndicator.value.style.width = width+'px';
-                navIndicator.value.style.backgroundColor = colors[type].primary
-                root.style.setProperty('--primary-color', colors[type].primary);
-                root.style.setProperty('--secondary-color', colors[type].secondary)
-            }
-            // console.log("active link: ", links);
-        }
-
-        watch(() => route.name, (routeName) => {
-            console.log("routeName: ", routeName);
-            // navItemSelection();
-        });
-
-        onMounted(() => {
-            //if(route.meta.routeNavPos){
-                // navItemSelection();
-            //}
-        })
-
-        return { navIndicator, navItemSelection }
-    },
-})
-</script>
 <style lang="scss" scoped>
 
     p{
@@ -151,18 +195,18 @@ export default defineComponent({
         font-weight: 600;
         font-size: 1.1em;
     }
+
     .horizontal-divider{
         flex-shrink: 1;
         flex-grow: 0;
         height: 1px;
         width: 80%;
-        background-color: var(--primary-color);
-        // border-bottom: 2px solid rgb(180, 176, 176);
+        background-color: var(--secondary-color);
         margin: 0 auto;
     }
     p#career{
-        color: var(--secondary-color);
-        font-weight: 600;
+        color: var(--primary-color);
+        font-weight: 500;
         font-style: normal;
         font-size: .9em;
     }
@@ -173,11 +217,11 @@ export default defineComponent({
         flex-direction: column;
         flex-shrink: 0;
         flex-grow: 0;
+        height: calc(100vh - 20px);
         width: 250px;
-        padding: 10px 0 20px 0;
+        // padding: 10px 0 20px 0;
         padding-top: 20px;
-        height: 100%;
-        /*background-color: #3594cb;*/
+        background-color: #fff;
         scrollbar-width: thin;
         scrollbar-color: var(--primary-color) var(--secondary-color);
         border-right: 2px solid var(--primary-color);
@@ -196,7 +240,9 @@ export default defineComponent({
             border-radius: 10px;
         }
 
-        #navheading{
+        
+
+        #navheading {
             display: flex;
             flex-direction: column;
             flex-grow: 0;
@@ -239,7 +285,7 @@ export default defineComponent({
             justify-content: space-between;
             align-items: center;
             // width: 100%;
-            padding: 20px 10px;
+            margin: 20px 10px 0 10px;
 
             .social-media-icon{
                 display: flex;
@@ -249,6 +295,7 @@ export default defineComponent({
                 // margin: 0 20px;
                 background-color: #fff;
                 color: var(--primary-color);
+                text-decoration: none;
                 border-radius: 4px;
                 box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
@@ -267,62 +314,71 @@ export default defineComponent({
             }
         }
 
-        div#navlist{
-            position: relative;
-            flex-grow: 1;
-            flex-shrink: 0;
-            margin:  0 -10px;
+        #nav-list-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            flex: 1 1 0px;
+            // min-height: 0;
 
-            #nav-item-indicator{
-                position: absolute;
-                height: 28px;
-                top: 3px;
-                right: -1px;
-                background-color: #3594cb;
-                border-top-left-radius: 17px;
-                border-bottom-left-radius: 17px;
-                /*box-shadow: inset 2px 0 5px rgb(44, 43, 43);*/
-                transition: all .4s ease-in-out;
-            }
+            div#navlist{
+                position: relative;
+                flex-grow: 0;
+                height: fit-content;
+                
+                #nav-item-indicator{
+                    position: absolute;
+                    height: 28px;
+                    top: 3px;
+                    right: -1px;
+                    background-color: #3594cb;
+                    border-top-left-radius: 17px;
+                    border-bottom-left-radius: 17px;
+                    /*box-shadow: inset 2px 0 5px rgb(44, 43, 43);*/
+                    transition: all .4s ease-in-out;
+                }
 
-            .list-item {
-                display: flex;
-                justify-content: flex-end;
-                padding: 0;
-                text-align: left;
-                border: none;
-                background-color:transparent;
+                .list-item {
+                    display: flex;
+                    justify-content: flex-end;
+                    padding: 0;
+                    text-align: left;
+                    border: none;
+                    background-color:transparent;
 
-                a {
-                    width: fit-content;
-                    text-decoration: none;
-                    font-size: 1.3em;
-                    text-align: right;
-                    border: 3px solid transparent;
-                    z-index: 16;
-
-                    &:hover{
+                    a {
+                        width: fit-content;
                         text-decoration: none;
-                    }
-                    
-                    &:not(.router-link-active){
+                        font-size: 1.3em;
+                        text-align: right;
+                        border: 3px solid transparent;
+                        z-index: 16;
 
-                        span.label {
-                            &:hover{
-                                color: var(--primary-color);
+                        &:hover{
+                            text-decoration: none;
+                        }
+                        
+                        &:not(.router-link-active){
+
+                            span.label {
+                                &:hover{
+                                    color: var(--primary-color);
+                                }
                             }
                         }
-                    }
 
-                    span.label {
-                        font-size: 0.85em;
-                        // border-bottom: 3px solid transparent;
-                        color: var(--secondary-color);
-                        transition: color .3s linear;
+                        span.label {
+                            font-size: 0.85em;
+                            // border-bottom: 3px solid transparent;
+                            color: var(--secondary-color);
+                            transition: color .3s linear;
+                        }
                     }
                 }
             }
         }
+
 
     }
     
